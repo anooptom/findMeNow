@@ -1,0 +1,54 @@
+package com.project.getlocation;
+
+
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+public class MainActivity extends AppCompatActivity {
+
+    private ActivityResultLauncher<String[]> mPermissionResultLauncher;
+    private boolean isLocationGranted = false;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        mPermissionResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), new ActivityResultCallback<Map<String, Boolean>>() {
+            @Override
+            public void onActivityResult(Map<String, Boolean> result) {
+                if (result.get(Manifest.permission.ACCESS_FINE_LOCATION) != null) {
+                    isLocationGranted = result.get(Manifest.permission.ACCESS_FINE_LOCATION);
+                }
+            }
+        });
+
+        requestPermission();
+    }
+
+    private void requestPermission() {
+        isLocationGranted = ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED;
+
+        List<String> permissionRequest = new ArrayList<String>();
+
+        if (!isLocationGranted) {
+            permissionRequest.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+
+        if (!permissionRequest.isEmpty()) {
+            mPermissionResultLauncher.launch(permissionRequest.toArray(new String[0]));
+        }
+    }
+}
