@@ -1,0 +1,97 @@
+
+import android.content.Context;
+import android.content.res.Resources;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraManager;
+import android.media.AudioManager;
+import android.os.Bundle;
+import android.view.WindowManager;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+
+public class MainActivity extends AppCompatActivity {
+
+    private CameraManager cameraManager;
+    private String cameraId;
+    private boolean isFlashlightOn = false;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        int ringerMode = audioManager.getRingerMode();
+
+        if (ringerMode == AudioManager.RINGER_MODE_SILENT) {
+            try {
+                cameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+                cameraId = cameraManager.getCameraIdList()[0];
+
+                // Check if the device has a flash
+                if (getPackageManager().hasSystemFeature(android.content.pm.PackageManager.FEATURE_CAMERA_FLASH)) {
+                    turnOnFlashlight();
+                }
+
+                increaseScreenBrightness();
+                showWhiteScreen();
+            } catch (Exception e) {
+                e.printStackTrace();
+                // Handle any exceptions here
+            }
+        }
+
+        // Rest of the code for playing the ringtone in non-silent mode
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Release any resources here
+        if (isFlashlightOn) {
+            turnOffFlashlight();
+        }
+    }
+
+    private void turnOnFlashlight() {
+        try {
+            if (cameraManager != null && cameraId != null) {
+                cameraManager.setTorchMode(cameraId, true);
+                isFlashlightOn = true;
+            }
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+            // Handle CameraAccessException here
+        }
+    }
+
+    private void turnOffFlashlight() {
+        try {
+            if (cameraManager != null && cameraId != null) {
+                cameraManager.setTorchMode(cameraId, false);
+                isFlashlightOn = false;
+            }
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+            // Handle CameraAccessException here
+        }
+    }
+
+    private void increaseScreenBrightness() {
+        try {
+            WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
+            layoutParams.screenBrightness = 1.0f;
+            getWindow().setAttributes(layoutParams);
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Handle any exceptions here
+        }
+    }
+
+    private void showWhiteScreen() {
+        Resources res = getResources();
+        int color = ContextCompat.getColor(this, android.R.color.white);
+        getWindow().getDecorView().setBackgroundColor(color);
+    }
+}
