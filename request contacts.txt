@@ -1,0 +1,62 @@
+package com.project.getcontacts;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+
+public class MainActivity extends AppCompatActivity {
+
+    private static final int REQUEST_CONTACTS_PERMISSION = 1;
+    private EditText editTextName;
+    private Button buttonSearch;
+    private TextView textViewPhoneNumber;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        editTextName = findViewById(R.id.editTextName);
+        buttonSearch = findViewById(R.id.buttonSearch);
+        textViewPhoneNumber = findViewById(R.id.textViewPhoneNumber);
+
+        buttonSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                searchContactPhoneNumber();
+            }
+        });
+    }
+
+    private void searchContactPhoneNumber(){
+        String name = editTextName.getText().toString().trim();
+
+        if (checkContactsPermission()){
+                textViewPhoneNumber.setText(name);
+        }
+        else {
+            requestContactsPermission();
+        }
+    }
+
+    private boolean checkContactsPermission() {
+        int result = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS);
+        return result == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestContactsPermission(){
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.READ_CONTACTS},
+                REQUEST_CONTACTS_PERMISSION);
+    }
+
+
+}
